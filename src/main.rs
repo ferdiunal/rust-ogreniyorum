@@ -1,23 +1,22 @@
-#[allow(special_module_name)]
-mod lib;
-mod models;
-mod repository;
+mod player;
+mod vlc;
+mod winamp;
 
-use repository::Repository;
+use player::{AudioPlayer, MediaPlayer};
+use vlc::Vlc;
+use winamp::Winamp;
 
 fn main() {
-    // let user = repository::UserRepository::create();
-    // println!("{:?}", user);
+    let vlc_player = AudioPlayer::new(Box::new(Vlc));
+    let winnap_player = AudioPlayer::new(Box::new(Winamp));
 
-    let users = repository::UserRepository::get_all();
-    println!("Total users: {}", users.len());
-    for user in users {
-        println!("{:?}", user);
-    }
+    vlc_player.play("song.mp3a");
+    vlc_player.play("song.mp4a");
+    vlc_player.play("song.mp4");
+    vlc_player.play("song.mp3");
 
-    // let user = repository::UserRepository::update("486db8e2-5e80-4cac-b309-4e8e791da0e9");
-    // println!("{:?}", user);
-
-    // let user = repository::UserRepository::delete("a176dc67-434e-4c28-b6c0-d69a342da388");
-    // println!("{}", user);
+    winnap_player.play("song.mp3a");
+    winnap_player.play("song.mp4a");
+    winnap_player.play("song.mp4");
+    winnap_player.play("song.mp3");
 }
