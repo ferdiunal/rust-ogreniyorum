@@ -1,23 +1,76 @@
-#[allow(special_module_name)]
-mod lib;
-mod models;
-mod repository;
+trait Render {
+    fn render(&self, text: &str);
+}
 
-use repository::Repository;
+struct VectorRenderer;
 
-fn main() {
-    // let user = repository::UserRepository::create();
-    // println!("{:?}", user);
+impl Render for VectorRenderer {
+    fn render(&self, text: &str) {
+        println!("Rendering {} as lines", text);
+    }
+}
 
-    let users = repository::UserRepository::get_all();
-    println!("Total users: {}", users.len());
-    for user in users {
-        println!("{:?}", user);
+struct RasterRenderer;
+
+impl Render for RasterRenderer {
+    fn render(&self, text: &str) {
+        println!("Rendering {} as pixels", text);
+    }
+}
+
+struct Circle<'a> {
+    renderer: &'a dyn Render,
+    x: f64,
+    y: f64,
+    radius: f64,
+}
+
+impl<'a> Circle<'a> {
+    fn new(renderer: &'a dyn Render, x: f64, y: f64, radius: f64) -> Self {
+        Self {
+            renderer,
+            x,
+            y,
+            radius,
+        }
     }
 
-    // let user = repository::UserRepository::update("486db8e2-5e80-4cac-b309-4e8e791da0e9");
-    // println!("{:?}", user);
+    fn draw(&self) {
+        self.renderer.render(&format!(
+            "Circle at ({}, {}) with radius {}",
+            self.x, self.y, self.radius
+        ));
+    }
+}
 
-    // let user = repository::UserRepository::delete("a176dc67-434e-4c28-b6c0-d69a342da388");
-    // println!("{}", user);
+struct Square<'a> {
+    renderer: &'a dyn Render,
+    x: f64,
+}
+
+impl<'a> Square<'a> {
+    fn new(renderer: &'a dyn Render, x: f64) -> Self {
+        Self { renderer, x }
+    }
+
+    fn draw(&self) {
+        self.renderer.render(&format!("Square at ({})", self.x));
+    }
+}
+
+fn main() {
+    let vector_renderer = VectorRenderer;
+    let raster_renderer = RasterRenderer;
+
+    let circle = Circle::new(&vector_renderer, 10.0, 10.0, 5.0);
+    let square = Square::new(&vector_renderer, 10.0);
+
+    circle.draw();
+    square.draw();
+
+    let circle = Circle::new(&raster_renderer, 10.0, 10.0, 5.0);
+    let square = Square::new(&raster_renderer, 10.0);
+
+    circle.draw();
+    square.draw();
 }
