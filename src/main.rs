@@ -1,23 +1,94 @@
-#[allow(special_module_name)]
-mod lib;
-mod models;
-mod repository;
+trait Button {
+    fn press(&self);
+    fn render(&self);
+}
 
-use repository::Repository;
+trait TextInput {
+    fn set_text(&self, text: &str);
+    fn get_text(&self) -> String;
+}
 
-fn main() {
-    // let user = repository::UserRepository::create();
-    // println!("{:?}", user);
-
-    let users = repository::UserRepository::get_all();
-    println!("Total users: {}", users.len());
-    for user in users {
-        println!("{:?}", user);
+struct WindowsButton;
+impl Button for WindowsButton {
+    fn press(&self) {
+        println!("WindowsButton pressed");
     }
 
-    // let user = repository::UserRepository::update("486db8e2-5e80-4cac-b309-4e8e791da0e9");
-    // println!("{:?}", user);
+    fn render(&self) {
+        println!("WindowsButton rendered");
+    }
+}
 
-    // let user = repository::UserRepository::delete("a176dc67-434e-4c28-b6c0-d69a342da388");
-    // println!("{}", user);
+struct MacButton;
+impl Button for MacButton {
+    fn press(&self) {
+        println!("MacButton pressed");
+    }
+
+    fn render(&self) {
+        println!("MacButton rendered");
+    }
+}
+
+struct WindowsTextInput;
+impl TextInput for WindowsTextInput {
+    fn set_text(&self, text: &str) {
+        println!("WindowsTextInput set_text: {}", text);
+    }
+
+    fn get_text(&self) -> String {
+        "WindowsTextInput".to_string()
+    }
+}
+
+struct MacTextInput;
+impl TextInput for MacTextInput {
+    fn set_text(&self, text: &str) {
+        println!("MacTextInput set_text: {}", text);
+    }
+
+    fn get_text(&self) -> String {
+        "MacTextInput".to_string()
+    }
+}
+
+trait GuiFactory {
+    fn create_button(&self) -> Box<dyn Button>;
+    fn create_text_input(&self) -> Box<dyn TextInput>;
+}
+
+struct WindowsFactory;
+impl GuiFactory for WindowsFactory {
+    fn create_button(&self) -> Box<dyn Button> {
+        Box::new(WindowsButton)
+    }
+
+    fn create_text_input(&self) -> Box<dyn TextInput> {
+        Box::new(WindowsTextInput)
+    }
+}
+
+struct MacFactory;
+impl GuiFactory for MacFactory {
+    fn create_button(&self) -> Box<dyn Button> {
+        Box::new(MacButton)
+    }
+
+    fn create_text_input(&self) -> Box<dyn TextInput> {
+        Box::new(MacTextInput)
+    }
+}
+
+fn main() {
+    let factory: Box<dyn GuiFactory> = if cfg!(target_os = "windows") {
+        Box::new(WindowsFactory)
+    } else {
+        Box::new(MacFactory)
+    };
+
+    factory.create_button().render();
+    factory.create_button().press();
+
+    factory.create_text_input().set_text("Hello, world!");
+    println!("{}", factory.create_text_input().get_text());
 }
