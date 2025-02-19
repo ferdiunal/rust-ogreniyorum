@@ -1,23 +1,76 @@
-#[allow(special_module_name)]
-mod lib;
-mod models;
-mod repository;
+use std::io::{self, Write};
 
-use repository::Repository;
+trait BaseUser {
+    fn send_message(&self, message: &str);
+    fn get_name(&self) -> &'static str;
+}
 
-fn main() {
-    // let user = repository::UserRepository::create();
-    // println!("{:?}", user);
+struct User {
+    name: &'static str,
+}
 
-    let users = repository::UserRepository::get_all();
-    println!("Total users: {}", users.len());
-    for user in users {
-        println!("{:?}", user);
+impl BaseUser for User {
+    fn send_message(&self, message: &str) {
+        println!("{}: {}", self.name, message);
     }
 
-    // let user = repository::UserRepository::update("486db8e2-5e80-4cac-b309-4e8e791da0e9");
-    // println!("{:?}", user);
+    fn get_name(&self) -> &'static str {
+        self.name
+    }
+}
 
-    // let user = repository::UserRepository::delete("a176dc67-434e-4c28-b6c0-d69a342da388");
-    // println!("{}", user);
+struct Chat {
+    name: &'static str,
+    users: Vec<Box<dyn BaseUser>>,
+}
+
+impl Chat {
+    fn add(&mut self, user: Box<dyn BaseUser>) -> bool {
+        let exists = self
+            .users
+            .iter()
+            .filter(|u| u.get_name() == user.get_name())
+            .count()
+            > 0;
+
+        if !exists {
+            self.users.push(user);
+        }
+
+        return true;
+    }
+}
+
+fn main() {
+    let mut chat = Chat {
+        name: "Chat",
+        users: vec![],
+    };
+
+    loop {
+        let mut input = String::new();
+        if let Err(e) = io::stdout().flush() {
+            eprintln!("Error flushing stdout: {}", e);
+        }
+
+        println!("Enter your name: ");
+        if let Err(e) = io::stdin().read_line(&mut input) {
+            eprintln!("Error reading line: {}", e);
+        }
+
+        let name = Box::leak(input.trim().to_string().into_boxed_str());
+        let user = User { name };
+
+        chat.add(Box::new(user));
+
+        println!("Welcome to the chat, {}", name);
+
+        if chat.users.len() == 2 {
+            break;
+        }
+    }
+
+    chat.users.iter().for_each(|user| {
+        user.send_message("User joined the chat");
+    });
 }
