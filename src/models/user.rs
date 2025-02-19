@@ -1,13 +1,13 @@
 use uuid::Uuid;
 
 #[allow(dead_code)]
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct User {
     id: String,
-    firstname: String,
-    lastname: String,
-    email: String,
-    password: String,
+    pub firstname: String,
+    pub lastname: String,
+    pub email: String,
+    pub password: String,
 }
 
 #[allow(dead_code)]
