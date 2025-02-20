@@ -1,23 +1,56 @@
-#[allow(special_module_name)]
-mod lib;
-mod models;
-mod repository;
+trait Notifier {
+    fn send(&self, message: &str);
+}
 
-use repository::Repository;
+struct EmailNotifier;
+
+impl Notifier for EmailNotifier {
+    fn send(&self, message: &str) {
+        println!("Sending email: {}", message);
+    }
+}
+
+struct SmsNotifier {
+    notifier: Box<dyn Notifier>,
+}
+
+impl SmsNotifier {
+    fn new(notifier: Box<dyn Notifier>) -> Self {
+        Self { notifier }
+    }
+}
+
+impl Notifier for SmsNotifier {
+    fn send(&self, message: &str) {
+        println!("Sending SMS: {}", message);
+        self.notifier.send(message);
+    }
+}
+
+struct SlackNotifierDecorator {
+    notifier: Box<dyn Notifier>,
+}
+
+impl SlackNotifierDecorator {
+    fn new(notifier: Box<dyn Notifier>) -> Self {
+        Self { notifier }
+    }
+}
+
+impl Notifier for SlackNotifierDecorator {
+    fn send(&self, message: &str) {
+        println!("Sending Slack: {}", message);
+        self.notifier.send(message);
+    }
+}
 
 fn main() {
-    // let user = repository::UserRepository::create();
-    // println!("{:?}", user);
+    let email_notify = Box::new(EmailNotifier);
+    email_notify.send("Hello, world!");
 
-    let users = repository::UserRepository::get_all();
-    println!("Total users: {}", users.len());
-    for user in users {
-        println!("{:?}", user);
-    }
+    let sms_notify = Box::new(SmsNotifier::new(email_notify));
+    sms_notify.send("Hello, world!");
 
-    // let user = repository::UserRepository::update("486db8e2-5e80-4cac-b309-4e8e791da0e9");
-    // println!("{:?}", user);
-
-    // let user = repository::UserRepository::delete("a176dc67-434e-4c28-b6c0-d69a342da388");
-    // println!("{}", user);
+    let slack_notify = Box::new(SlackNotifierDecorator::new(sms_notify));
+    slack_notify.send("Hello, world!");
 }
