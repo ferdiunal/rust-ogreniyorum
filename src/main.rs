@@ -1,23 +1,34 @@
-#[allow(special_module_name)]
-mod lib;
-mod models;
-mod repository;
+trait MediaPlayer {
+    fn play(&self, file_name: &str);
+}
 
-use repository::Repository;
+struct AudioPlayer;
+struct VideoPlayer;
+
+impl MediaPlayer for AudioPlayer {
+    fn play(&self, file_name: &str) {
+        println!("Playing audio file: {}", file_name);
+    }
+}
+
+impl MediaPlayer for VideoPlayer {
+    fn play(&self, file_name: &str) {
+        println!("Playing video file: {}", file_name);
+    }
+}
+
+fn media_player_factory(media_type: &str) -> Box<dyn MediaPlayer> {
+    match media_type {
+        "audio" => Box::new(AudioPlayer),
+        "video" => Box::new(VideoPlayer),
+        _ => panic!("Invalid media type"),
+    }
+}
 
 fn main() {
-    // let user = repository::UserRepository::create();
-    // println!("{:?}", user);
+    let audio_player = media_player_factory("audio");
+    audio_player.play("song.mp3");
 
-    let users = repository::UserRepository::get_all();
-    println!("Total users: {}", users.len());
-    for user in users {
-        println!("{:?}", user);
-    }
-
-    // let user = repository::UserRepository::update("486db8e2-5e80-4cac-b309-4e8e791da0e9");
-    // println!("{:?}", user);
-
-    // let user = repository::UserRepository::delete("a176dc67-434e-4c28-b6c0-d69a342da388");
-    // println!("{}", user);
+    let video_player = media_player_factory("video");
+    video_player.play("movie.mp4");
 }
